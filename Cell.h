@@ -1,5 +1,4 @@
-#ifndef CELL_H
-#define CELL_H
+#pragma once
 
 struct Cell
 {
@@ -11,4 +10,4 @@ struct Cell
     int nbMineAdjacent = 0;
 };
 
-#endif
+Cell** CreateMatrix(int height, int length);

@@ -4,16 +4,28 @@
 
 struct Data
 {
+	// console values
+	int heightConsole;
+	int lengthConsole;
+	// grid values
+	int gridPosX;
+	int gridPosY;
 	int height;
 	int length;
+	// game
 	Cell** matrix;
 	CellsToUpdate* cellsToUpdate;
-	int* entrances;
 	int lastEntrance;
+	int lastPosX;
+	int lastPosY;
+	int posX;
+	int posY;
+	int nbCaseDug;
+	// settings
+	int* entrances;
 	const char** backgrounds;
 	const char** foregrounds;
 	int color;
-	int nbCaseDug;
-	int posX;
-	int posY;
+
+	void FreeData(Data data);
 };

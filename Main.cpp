@@ -1,16 +1,14 @@
 #include <iostream>;
-#include "ConsoleManager.cpp";
-#include "GameManager.cpp";
+#include "ConsoleManager.h";
+#include "GameManager.h";
 
 using namespace std;
 
-
 int main()
 {
-    fullsc();
+    FullScreen();
     HideCursor();
     srand(time(NULL));
-    cout << "\033[40m";
     Game();
     return 0;
 }

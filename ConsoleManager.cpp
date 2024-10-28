@@ -1,7 +1,8 @@
-#pragma once
+#include "ConsoleManager.h";
 #include <iostream>;
 #include <windows.h>;
 #include <conio.h>;
+#include <string>;
 
 int GetEntrance()
 {
@@ -9,7 +10,7 @@ int GetEntrance()
     return entrance;
 }
 
-void fullsc()
+void FullScreen()
 {
     HWND Hwnd = GetForegroundWindow();
     int x = GetSystemMetrics(SM_CXSCREEN);
@@ -39,9 +40,33 @@ void HideCursor()
 
 void ClearScreen(int x, int y, int l, int h)
 {
-    std::cout << "\033[40m\033[30m";
-    MoveCursor(0, 0);
+    std::cout << "\033[40m";
+    std::string clear(l, ' ');
     for (int i = 0; i < h; i++)
-        std::cout << ' ' * l << std::endl;
-    MoveCursor(0, 0);
+    {
+        MoveCursor(x, y + i);
+        std::cout << clear << std::endl;
+    }
+}
+
+int GetHeightConsole()
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    return csbi.srWindow.Bottom - csbi.srWindow.Top + 1; // Hauteur
+}
+
+int GetLengthConsole()
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    return csbi.srWindow.Right - csbi.srWindow.Left + 1; // Largeur
+}
+
+void GetPosGrid(Data& data)
+{
+    data.gridPosX = (data.lengthConsole - data.length * 4) / 2;
+    data.gridPosY = (data.heightConsole - data.height * 2) / 2;
 }

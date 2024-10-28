@@ -1,9 +1,5 @@
-#pragma once
-#include "Data.h";
-#include "DisplayManager.cpp"
-#include "Cell.cpp"
-#include "CellsToUpdate.cpp"
-#include "UI.cpp"
+#include "GameManager.h"
+
 #include <iostream>;
 
 void GetMine(Data& data)
@@ -117,19 +113,28 @@ bool Dig(Data& data, int y1, int x1, bool bigDig)
 bool Action(Data& data)
 {
     int entrance = GetEntrance();
-
     if (entrance == data.entrances[0] && data.posY > 0)
-        (data.posY)--;
-    else if (entrance == data.entrances[1] && data.posY < data.height - 1)
-        (data.posY)++;
-    else if (entrance == data.entrances[2] && data.posX > 0)
-        (data.posX)--;
-    else if (entrance == data.entrances[3] && data.posX < data.length - 1)
-        (data.posX)++;
-    else if (entrance == data.entrances[4])
     {
-        return Dig(data, data.posY, data.posX, true);
+        data.lastPosY = data.posY;
+        data.posY--;
     }
+    else if (entrance == data.entrances[1] && data.posY < data.height - 1)
+    {
+        data.lastPosY = data.posY;
+        data.posY++;
+    }
+    else if (entrance == data.entrances[2] && data.posX > 0)
+    {
+        data.lastPosX = data.posX;
+        data.posX--;
+    }
+    else if (entrance == data.entrances[3] && data.posX < data.length - 1)
+    {
+        data.lastPosX = data.posX;
+        data.posX++;
+    }
+    else if (entrance == data.entrances[4])
+        return Dig(data, data.posY, data.posX, true);
     else if (entrance == data.entrances[5])
         PutFlag(data, data.posY, data.posX);
     else if (entrance == data.entrances[6])
@@ -206,7 +211,9 @@ void Game()
     int entrances[] = { 122, 115, 113, 100, 108, 107, 27 }; // up, down, left, rigth , A, B, start
     const char* foregrounds[] = { "\033[36m", "\033[35m", "\033[92m", "\033[33m" };  //cyan, magenta, green, yellow
     const char* backgrounds[] = { "\033[46m", "\033[45m", "\033[102m", "\033[43m" };
-    Data data = { 0, 0, nullptr, nullptr, entrances, 0, backgrounds, foregrounds, 0, 0, 0, 0};
+    Data data = { 0, 0, 0, 0, 0, 0, nullptr, nullptr, 0, 0, 0, 0, 0, 0, entrances, backgrounds, foregrounds};
+    data.heightConsole = GetHeightConsole();
+    data.lengthConsole = GetLengthConsole();
     bool running = true;
     while (running)
     {
@@ -219,12 +226,13 @@ void Game()
 
         data.matrix = CreateMatrix(data.height, data.length);
         data.cellsToUpdate = CreateArray(16);
+        GetPosGrid(data);
         Display(data);
-
         bool isFirstDig = true; // boucle du premier creusage
         while (isFirstDig)
         {
-            Display(data);
+            GetPosGrid(data);
+            UpdatePlayer(data);
             isFirstDig = ActionFirstDig(data);
         }
         bool game = true; // boucle principale
@@ -238,7 +246,7 @@ void Game()
                 game = false;
         }
         running = PostGame(data, isLost);
-        free(matrix);
+        free(data.matrix);
         data.nbCaseDug = 0;
     }
 }

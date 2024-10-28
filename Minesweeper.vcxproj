@@ -130,6 +130,7 @@
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="CellsToUpdate.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
+    <ClCompile Include="Data.cpp" />
     <ClCompile Include="DisplayManager.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -138,7 +139,11 @@
   <ItemGroup>
     <ClInclude Include="Cell.h" />
     <ClInclude Include="CellsToUpdate.h" />
+    <ClInclude Include="ConsoleManager.h" />
     <ClInclude Include="Data.h" />
+    <ClInclude Include="DisplayManager.h" />
+    <ClInclude Include="GameManager.h" />
+    <ClInclude Include="UI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

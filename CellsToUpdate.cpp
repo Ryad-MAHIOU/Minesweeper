@@ -1,61 +1,56 @@
-#pragma once
-#include "CellsToUpdate.h"
+#include "CellsToUpdate.h";
 #include <iostream>;
+
+bool CellsToUpdate::IsFullMemory()
+{
+    return (size + 1) * sizeof(Cell*) >= capacity * sizeof(Cell*);
+}
+
+bool CellsToUpdate::IsHalfMemory()
+{
+    return size * 2 <= capacity;
+}
+
+void CellsToUpdate::AddMemory()
+{
+    capacity *= 2;
+    array = (Cell**)realloc(array, capacity * sizeof(Cell*));
+}
+
+void CellsToUpdate::RemoveMemory()
+{
+    capacity /= 2;
+    array = (Cell**)realloc(array, capacity * sizeof(Cell*));
+}
+
+void CellsToUpdate::AddElement(Cell* element)
+{
+    if (IsFullMemory())
+        AddMemory();
+    array[size] = element;
+    size++;
+}
+
+void CellsToUpdate::RemoveElement(int index)
+{
+    memcpy(array + index, array + index + 1, (size - index - 1) * sizeof(Cell*));
+    size--;
+    if (IsHalfMemory())
+        RemoveMemory();
+}
+
+void CellsToUpdate::FreeArray()
+{
+    size = 0;
+    capacity = 0;
+    free(array); // Libérer l'array, pas pCellsToUpdate
+}
 
 CellsToUpdate* CreateArray(int capacity)
 {
-	CellsToUpdate* pCellsToUpdate = (CellsToUpdate*)malloc(sizeof(CellsToUpdate));
-	pCellsToUpdate->array = (Cell**)malloc(capacity * sizeof(Cell*));
-	pCellsToUpdate->size = 0;
-	pCellsToUpdate->capacity = capacity;
-	return pCellsToUpdate;
-}
-
-bool IsFullMemory(CellsToUpdate* pCellsToUpdate)
-{
-	if ((pCellsToUpdate->size + 1) * sizeof(int) >= pCellsToUpdate->capacity)
-		return true;
-	return false;
-}
-
-bool IsHalfMemory(CellsToUpdate* pCellsToUpdate)
-{
-	if (pCellsToUpdate->size * 2 <= pCellsToUpdate->capacity)
-		return true;
-	return false;
-}
-
-void AddMemory(CellsToUpdate* pCellsToUpdate)
-{
-	pCellsToUpdate->capacity *= 2;
-	pCellsToUpdate->array = (Cell**)realloc(pCellsToUpdate->array, pCellsToUpdate->capacity * sizeof(Cell*));
-}
-
-void RemoveMemory(CellsToUpdate* pCellsToUpdate)
-{
-	pCellsToUpdate->capacity /= 2;
-	pCellsToUpdate->array = (Cell**)realloc(pCellsToUpdate->array, pCellsToUpdate->capacity * sizeof(Cell*));
-}
-
-void AddElement(CellsToUpdate* pCellsToUpdate, Cell* element)
-{
-	if (IsFullMemory(pCellsToUpdate))
-		AddMemory(pCellsToUpdate);
-	pCellsToUpdate->array[pCellsToUpdate->size] = element;
-	pCellsToUpdate->size++;
-}
-
-void RemoveElement(CellsToUpdate* pCellsToUpdate, int index)
-{
-	memcpy(pCellsToUpdate->array + index, pCellsToUpdate->array + index + 1, (pCellsToUpdate->size - index) * sizeof(Cell*));
-	pCellsToUpdate->size--;
-	if (IsHalfMemory(pCellsToUpdate))
-		RemoveMemory(pCellsToUpdate);
-}
-
-void FreeArray(CellsToUpdate* pCellsToUpdate)
-{
-	pCellsToUpdate->size = 0;
-	pCellsToUpdate->capacity = 0;
-	free(pCellsToUpdate);
+    CellsToUpdate* pCellsToUpdate = (CellsToUpdate*)malloc(sizeof(CellsToUpdate));
+    pCellsToUpdate->array = (Cell**)malloc(capacity * sizeof(Cell*));
+    pCellsToUpdate->size = 0;
+    pCellsToUpdate->capacity = capacity;
+    return pCellsToUpdate;
 }

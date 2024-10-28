@@ -1,12 +1,13 @@
 ﻿#pragma once
-#include "Data.h";
-#include "ConsoleManager.cpp";
+#include "UI.h";
+
 #include <iostream>;
+#include <conio.h>
+#include <string>
 
 #define GRAY "\033[90m"
 
 using namespace std;
-
 
 int GetLength(const char* str)
 {
@@ -18,9 +19,10 @@ int GetLength(const char* str)
 void DisplayButton(const char* str, const char* foreground, int x, int y, int l)
 {
     int length = GetLength(str);
+    string motif(l - 2, (char)(-60));
     // Première ligne
     MoveCursor(x, y);
-    cout << foreground << (char)(-38) << (char)(-60) * (l - 2) << (char)(-65);
+    cout << foreground << (char)(-38) << motif << (char)(-65);
     // Deuxième ligne
     MoveCursor(x, y + 1);
     cout << (char)(-77);
@@ -30,41 +32,60 @@ void DisplayButton(const char* str, const char* foreground, int x, int y, int l)
     cout << (char)(-77);
     // Troisième ligne
     MoveCursor(x, y + 2);
-    cout << foreground << (char)(-64) << (char)(-39) * (l - 2) << (char)(-65);
+    cout << foreground << (char)(-64) << motif << (char)(-39);
 }
 
-bool DisplayUI(Data& data, int* option, const char** buttonsName, int buttonsNb, int l, bool isKey)
+bool DisplayUI(Data& data, int* option, const char** buttonsName, int buttonsNb, int l, const char* txt)
 {
-    int x, y;
-    int i = 0;
-    for (i; i < *option; i++)
-        DisplayButton(buttonsName[i], GRAY, x + 16, y + 3 * i, l);
-    DisplayButton(buttonsName[*option], data.foregrounds[data.color], x + 16, y + 3 * i, l);
-    i++;
-    for (i; i < buttonsNb; i++)
-        DisplayButton(buttonsName[i], GRAY, x + 16, y + 3 * i, l);
-    if (isKey)
+    int heightConsole = GetHeightConsole();
+    int lengthConsole = GetLengthConsole();
+    if (data.heightConsole != heightConsole || data.lengthConsole != lengthConsole)
     {
-        for (i = 0; i < buttonsNb - 1; i++)
+        data.heightConsole = heightConsole;
+        data.lengthConsole = lengthConsole;
+        ClearScreen(0, 0, data.lengthConsole, data.heightConsole);
+    }
+    int lengthTxt = GetLength(txt);
+    if (data.heightConsole < buttonsNb * 3 + 1 || data.lengthConsole < l || data.lengthConsole < lengthTxt)
+    {
+        MoveCursor(0, 0);
+        cout << GRAY << "de-zoom";
+    }
+    else
+    {
+        int x = (data.lengthConsole - l) / 2;
+        int y = ((data.heightConsole - buttonsNb * 3) / 2) + 1;
+        int i = 0;
+        for (i; i < *option; i++)
+            DisplayButton(buttonsName[i], GRAY, x, y + 3 * i, l);
+        DisplayButton(buttonsName[*option], data.foregrounds[data.color], x, y + 3 * i, l);
+        i++;
+        for (i; i < buttonsNb; i++)
+            DisplayButton(buttonsName[i], GRAY, x, y + 3 * i, l);
+        if (txt == "Keys")
         {
-            MoveCursor(x + 30, y + 3 * i + 1);
-            cout << GRAY << "-> " << static_cast<char>(data.entrances[i]);
+            for (i = 0; i < buttonsNb - 1; i++)
+            {
+                MoveCursor(x, y + 3 * i + 1);
+                cout << GRAY << "-> " << static_cast<char>(data.entrances[i]);
+            }
         }
+        MoveCursor((data.lengthConsole - lengthTxt) / 2, y - 1);
+        cout << GRAY << txt;
+        int entrance = GetEntrance();
+        if (entrance == data.entrances[0])
+        {
+            if (*option == 0)
+                *option = buttonsNb - 1;
+            else
+                *option = ((*option) - 1) % buttonsNb;
+        }
+        else if (entrance == data.entrances[1])
+            *option = ((*option) + 1) % buttonsNb;
+        else if (entrance == data.entrances[4] || entrance == 13)
+            return false;
+        return true;
     }
-    MoveCursor(0, 0);
-    int entrance = GetEntrance();
-    if (entrance == data.entrances[0])
-    {
-        if (*option == 0)
-            *option = buttonsNb - 1;
-        else
-            *option = ((*option) - 1) % buttonsNb;
-    }
-    else if (entrance == data.entrances[1])
-        *option = ((*option) + 1) % buttonsNb;
-    else if (entrance == data.entrances[4] || entrance == 13)
-        return false;
-    return true;
 }
 
 void Difficulty(Data& data)
@@ -73,13 +94,10 @@ void Difficulty(Data& data)
     int* pOption = &option;
     const char* buttonsName[] = { "easy", "medium", "hard" };
     int buttonsNb = 3;
+    int lengthButton = 12;
     bool difficulty = true;
     while (difficulty)
-    {
-        MoveCursor(0, 0);
-        cout << GRAY << "Choose a difficulty:" << endl;
-        difficulty = DisplayUI(data, pOption, buttonsName, buttonsNb, 12, false);
-    }
+        difficulty = DisplayUI(data, pOption, buttonsName, buttonsNb, lengthButton, "Difficulty");
     switch (option)
     {
     case 0:
@@ -99,7 +117,8 @@ void Difficulty(Data& data)
 
 bool DisplayRestart(Data& data, int* option)
 {
-    int x, y;
+    int x = 0;
+    int y = 0;
     if (*option == 0)
     {
         DisplayButton("retry", data.foregrounds[data.color], x, y - 1, 15);
@@ -132,11 +151,7 @@ void Keys(Data& data)
     {
         bool keys = true;
         while (keys)
-        {
-            MoveCursor(0, 0);
-            cout << GRAY << "                   KEYS" << endl;
-            keys = DisplayUI(data, pOption, buttonsName, buttonsNb, 20, true);
-        }
+            keys = DisplayUI(data, pOption, buttonsName, buttonsNb, 20, "Keys");
         if (option == 6)
             stay = false;
         else
@@ -158,11 +173,7 @@ void Themes(Data& data)
     {
         bool themes = true;
         while (themes)
-        {
-            MoveCursor(0, 0);
-            cout << GRAY << "                  THEMES" << endl;
-            themes = DisplayUI(data, pOption, buttonsName, buttonsNb, 15, false);
-        }
+            themes = DisplayUI(data, pOption, buttonsName, buttonsNb, 15, "Themes");
         if (option == 4)
             stay = false;
         else
@@ -181,11 +192,7 @@ void Settings(Data& data)
     {
         bool settings = true;
         while (settings)
-        {
-            MoveCursor(0, 0);
-            cout << GRAY << "                 SETTINGS" << endl;
-            settings = DisplayUI(data, pOption, buttonsName, buttonsNb, 15, false);
-        }
+            settings = DisplayUI(data, pOption, buttonsName, buttonsNb, 15, "Settings");
         switch (option)
         {
         case 0:
@@ -212,11 +219,7 @@ void Pause(Data& data)
     {
         bool pause = true;
         while (pause)
-        {
-            MoveCursor(0, 0);
-            cout << GRAY << "                  PAUSE" << endl;
-            pause = DisplayUI(data, pOption, buttonsName, buttonsNb, 15, false);
-        }
+            pause = DisplayUI(data, pOption, buttonsName, buttonsNb, 15, "Pause");
         switch (option)
         {
         case 0:
